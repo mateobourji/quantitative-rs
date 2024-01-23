@@ -1,0 +1,15 @@
+[package]
+name = "quantitative-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4.31"
+rand = "0.8.5"
+rand_distr = "0.4.3"
+statrs = "0.16.0"
+ndarray = "0.15.6"
+
+
