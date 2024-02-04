@@ -1,3 +1,6 @@
+use chrono::{DateTime, Utc};
+use crate::cashflows::cashflow::CashFlow;
+
 pub mod vanilla_option;
 
 pub enum OptionType {
@@ -5,6 +8,8 @@ pub enum OptionType {
     Put,
 }
 
-pub trait Payoff{
-    fn payoff(&self, process_path: Vec<(f64, f64)>) -> f64;
+pub trait Value {
+    fn calculate_payoff(&self, price_path: Vec<f64>) -> CashFlow;
+
+    fn settlement_datetime(&self) -> DateTime<Utc>;
 }
