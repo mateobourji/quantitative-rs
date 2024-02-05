@@ -39,12 +39,13 @@ impl Add for CashFlow {
     type Output = Self;
 
     fn add(self, other: Self) -> Self::Output {
-        if self.settlement_datetime != other.settlement_datetime {
+        if self.settlement_datetime == other.settlement_datetime {
+            CashFlow {
+                amount: self.amount + other.amount,
+                settlement_datetime: self.settlement_datetime,
+            }
+        } else {
             panic!("Cannot add cashflows with different settlement dates.");
-        }
-        CashFlow {
-            amount: self.amount + other.amount,
-            settlement_datetime: self.settlement_datetime,
         }
     }
 }
@@ -63,12 +64,13 @@ impl Sub for CashFlow {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self::Output {
-        if self.settlement_datetime != other.settlement_datetime {
+        if self.settlement_datetime == other.settlement_datetime {
+            CashFlow {
+                amount: self.amount - other.amount,
+                settlement_datetime: self.settlement_datetime,
+            }
+        } else {
             panic!("Cannot subtract cashflows with different settlement dates.");
-        }
-        CashFlow {
-            amount: self.amount - other.amount,
-            settlement_datetime: self.settlement_datetime,
         }
     }
 }
