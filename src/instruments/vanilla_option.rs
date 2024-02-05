@@ -1,9 +1,10 @@
 extern crate chrono;
 
-use crate::instruments::{OptionType, Value};
-use crate::cashflows::cashflow;
 use chrono::{DateTime, Utc};
+
+use crate::cashflows::cashflow;
 use crate::cashflows::cashflow::CashFlow;
+use crate::instruments::{OptionType, Value};
 
 pub struct VanillaOption {
     pub strike: f64,

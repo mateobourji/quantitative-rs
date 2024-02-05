@@ -7,13 +7,20 @@ use rand_distr::Normal;
 use crate::processes::Simulate;
 
 pub struct HestonProcess {
-    pub s0: f64, // Initial asset price
-    pub v0: f64, // Initial variance
-    pub r: f64, // Risk-free rate
-    pub kappa: f64, // Rate of mean reversion
-    pub theta: f64, // Long-term variance mean
-    pub sigma: f64, // Volatility of volatility
-    pub rho: f64, // Correlation between the two Brownian motions
+    pub s0: f64,
+    // Initial asset price
+    pub v0: f64,
+    // Initial variance
+    pub r: f64,
+    // Risk-free rate
+    pub kappa: f64,
+    // Rate of mean reversion
+    pub theta: f64,
+    // Long-term variance mean
+    pub sigma: f64,
+    // Volatility of volatility
+    pub rho: f64,
+    // Correlation between the two Brownian motions
     pub t: f64, // Time to maturity
 }
 

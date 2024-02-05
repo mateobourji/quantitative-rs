@@ -1,4 +1,5 @@
 use chrono::{DateTime, Utc};
+
 use crate::cashflows::cashflow::CashFlow;
 
 pub mod vanilla_option;

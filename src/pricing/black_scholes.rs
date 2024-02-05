@@ -1,8 +1,9 @@
 extern crate chrono;
 extern crate statrs;
 
-use statrs::distribution::{Continuous, ContinuousCDF, Normal};
 use chrono::offset::Utc;
+use statrs::distribution::{Continuous, ContinuousCDF, Normal};
+
 use crate::instruments::OptionType;
 use crate::instruments::vanilla_option::VanillaOption;
 
@@ -20,7 +21,7 @@ fn d1(strike: f64, s0: f64, r: f64, sigma: f64, time_to_maturity: f64) -> f64 {
     (s0 / strike).ln() + (r + sigma.powi(2) / 2.0) * time_to_maturity / (sigma * time_to_maturity.sqrt())
 }
 
-fn d2(d1: f64, sigma: f64, time_to_maturity: f64) -> f64{
+fn d2(d1: f64, sigma: f64, time_to_maturity: f64) -> f64 {
     d1 - sigma * time_to_maturity.sqrt()
 }
 
@@ -87,6 +88,7 @@ create_black_scholes_functions!(VanillaOption);
 
 mod tests {
     use chrono::Duration;
+
     use super::*;
 
     fn create_option(option_type: OptionType, strike: f64, days_to_maturity: i64) -> VanillaOption {
@@ -99,7 +101,6 @@ mod tests {
     }
 
     fn test_black_scholes(option_type: OptionType, strike: f64, s0: f64, r: f64, sigma: f64, expected_price: f64) {
-
         let option = create_option(option_type, strike, 365);
 
         let price = black_scholes_price(&option, s0, r, sigma);
@@ -118,8 +119,8 @@ mod tests {
         test_black_scholes(OptionType::Put, 100.0, 100.0, r, sigma, 5.57);
         test_black_scholes(OptionType::Put, 120.0, 100.0, r, sigma, 17.39);
         test_black_scholes(OptionType::Put, 80.0, 100.0, r, sigma, 0.69);
-
     }
+
     #[test]
     fn test_delta() {
         let option = create_option(OptionType::Call, 100.0, 365);
@@ -159,6 +160,7 @@ mod tests {
 
         assert!((rho - 53.04977330181251).abs() < 0.1);
     }
+
     #[test]
     fn test_normal_cdf() {
         let value = normal_cdf(0.0);

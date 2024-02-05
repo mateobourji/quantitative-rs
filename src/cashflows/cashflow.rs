@@ -2,6 +2,7 @@ extern crate chrono;
 
 use std::fmt;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub};
+
 use chrono::{DateTime, Utc};
 
 #[derive(Debug)]
@@ -119,34 +120,35 @@ impl DivAssign<f64> for CashFlow {
 
 #[cfg(test)]
 mod tests {
+    use chrono::TimeZone;
+
     use super::*;
-    use chrono::{TimeZone};
 
     #[test]
     fn cashflows_are_equal() {
-        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         assert_eq!(cf1, cf2, "Cashflows with the same amount and settlement date should be equal");
     }
 
     #[test]
     fn cashflows_are_not_equal_due_to_amount() {
-        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         assert_ne!(cf1, cf2, "Cashflows with different amounts should not be equal");
     }
 
     #[test]
     fn cashflows_are_not_equal_due_to_date() {
-        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0 ,0).unwrap());
+        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
         assert_ne!(cf1, cf2, "Cashflows with different settlement dates should not be equal");
     }
 
     #[test]
     fn test_cashflow_add() {
-        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let result = cf1 + cf2;
         assert_eq!(result.amount, 250.0);
     }
@@ -154,15 +156,15 @@ mod tests {
     #[test]
     #[should_panic(expected = "Cannot add cashflows with different settlement dates.")]
     fn test_cashflow_add_panic() {
-        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0 ,0).unwrap());
+        let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
         let _ = cf1 + cf2;
     }
 
     #[test]
     fn test_cashflow_add_assign() {
-        let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         cf1 += cf2;
         assert_eq!(cf1.amount, 350.0);
     }
@@ -170,14 +172,15 @@ mod tests {
     #[test]
     #[should_panic(expected = "Cannot add cashflows with different settlement dates.")]
     fn test_cashflow_add_assign_panic() {
-        let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0 ,0).unwrap());
+        let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
         cf1 += cf2;
     }
+
     #[test]
     fn test_cashflow_sub() {
-        let cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let result = cf1 - cf2;
         assert_eq!(result.amount, 50.0);
     }
@@ -185,28 +188,28 @@ mod tests {
     #[test]
     #[should_panic(expected = "Cannot subtract cashflows with different settlement dates.")]
     fn test_cashflow_sub_panic() {
-        let cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
-        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0 ,0).unwrap());
+        let cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
         let _ = cf1 - cf2;
     }
 
     #[test]
     fn test_cashflow_mul() {
-        let cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let result = cf * 2.0;
         assert_eq!(result.amount, 400.0);
     }
 
     #[test]
     fn test_cashflow_mul_assign() {
-        let mut cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let mut cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         cf *= 2.0;
         assert_eq!(cf.amount, 400.0);
     }
 
     #[test]
     fn test_cashflow_div() {
-        let cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let result = cf / 2.0;
         assert_eq!(result.amount, 100.0);
     }
@@ -214,13 +217,13 @@ mod tests {
     #[test]
     #[should_panic(expected = "Attempt to divide by zero")]
     fn test_cashflow_div_by_zero() {
-        let cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let _ = cf / 0.0; // This should panic
     }
 
     #[test]
     fn test_cashflow_div_assign() {
-        let mut cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let mut cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         cf /= 2.0;
         assert_eq!(cf.amount, 100.0);
     }
@@ -228,15 +231,15 @@ mod tests {
     #[test]
     #[should_panic(expected = "Attempt to divide by zero.")]
     fn test_cashflow_div_assign_panic() {
-        let mut cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap());
+        let mut cf = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         cf /= 0.0; // This should panic
     }
 
     #[test]
     fn test_present_value_one_year() {
         let amount = 100.0;
-        let settlement_datetime = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap();
-        let valuation_datetime = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0 ,0).unwrap();
+        let settlement_datetime = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
+        let valuation_datetime = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
         let discount_rate = 0.05;
 
         let cashflow = CashFlow::new(amount, settlement_datetime);
@@ -249,8 +252,8 @@ mod tests {
     #[test]
     fn test_present_value_six_months() {
         let amount = 100.0;
-        let settlement_datetime = Utc.with_ymd_and_hms(2023, 7, 1, 0, 0 ,0).unwrap();
-        let valuation_datetime = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0 ,0).unwrap();
+        let settlement_datetime = Utc.with_ymd_and_hms(2023, 7, 1, 0, 0, 0).unwrap();
+        let valuation_datetime = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
         let discount_rate = 0.05;
 
         let cashflow = CashFlow::new(amount, settlement_datetime);
@@ -263,8 +266,8 @@ mod tests {
     #[test]
     fn test_present_value_with_negative_discount_rate() {
         let amount: f64 = 100.0;
-        let settlement_datetime = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap();
-        let valuation_datetime = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0 ,0).unwrap();
+        let settlement_datetime = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
+        let valuation_datetime = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
         let discount_rate = -0.01;
 
         let cashflow = CashFlow::new(amount, settlement_datetime);
@@ -277,8 +280,8 @@ mod tests {
     #[test]
     fn test_future_value_one_year() {
         let amount = 100.0;
-        let settlement_datetime = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0 ,0).unwrap();
-        let valuation_datetime = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0 ,0).unwrap();
+        let settlement_datetime = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let valuation_datetime = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
         let discount_rate = 0.05f64;
 
         let cashflow = CashFlow::new(amount, settlement_datetime);

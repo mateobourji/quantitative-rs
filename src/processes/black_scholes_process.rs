@@ -7,9 +7,12 @@ use rand_distr::Normal;
 use crate::processes::Simulate;
 
 pub struct BlackScholesProcess {
-    pub s0: f64, // Initial asset price
-    pub r: f64,  // Risk-free rate
-    pub sigma: f64, // Volatility of the asset
+    pub s0: f64,
+    // Initial asset price
+    pub r: f64,
+    // Risk-free rate
+    pub sigma: f64,
+    // Volatility of the asset
     pub t: f64,  // Time to maturity
 }
 
