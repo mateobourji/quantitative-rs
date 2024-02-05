@@ -37,8 +37,4 @@ impl Simulate for BlackScholesProcess {
 
         s_path
     }
-
-    fn discount_factor(&self) -> f64 {
-        (-self.r * self.t).exp()
-    }
 }

@@ -48,8 +48,4 @@ impl Simulate for HestonProcess
 
         s_path
     }
-
-    fn discount_factor(&self) -> f64 {
-        (-self.r * self.t).exp()
-    }
 }
