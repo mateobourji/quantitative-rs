@@ -1,7 +1,7 @@
 extern crate chrono;
 
 use std::fmt;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use chrono::{DateTime, Utc};
 
@@ -76,6 +76,15 @@ impl Sub for CashFlow {
     }
 }
 
+impl SubAssign for CashFlow {
+    fn sub_assign(&mut self, other: Self) {
+        if self.settlement_datetime == other.settlement_datetime {
+            self.amount -= other.amount;
+        } else {
+            panic!("Cannot add cashflows with different settlement dates.");
+        }
+    }
+}
 impl Mul<f64> for CashFlow {
     type Output = Self;
 
@@ -191,6 +200,22 @@ mod tests {
         let cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
         let _ = cf1 - cf2;
+    }
+
+    #[test]
+    fn test_cashflow_sub_assign() {
+        let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        cf1 -= cf2;
+        assert_eq!(cf1.amount, 50.0);
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot add cashflows with different settlement dates.")]
+    fn test_cashflow_sub_assign_panic() {
+        let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
+        let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
+        cf1 -= cf2;
     }
 
     #[test]
