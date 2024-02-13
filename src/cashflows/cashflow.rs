@@ -35,11 +35,10 @@ impl PartialEq for CashFlow {
         self.amount == other.amount && self.settlement_datetime == other.settlement_datetime
     }
 }
+impl Add<&CashFlow> for &CashFlow {
+    type Output = CashFlow;
 
-impl Add for CashFlow {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self::Output {
+    fn add(self, other: &CashFlow) -> Self::Output {
         if self.settlement_datetime == other.settlement_datetime {
             CashFlow {
                 amount: self.amount + other.amount,
@@ -51,8 +50,8 @@ impl Add for CashFlow {
     }
 }
 
-impl AddAssign for CashFlow {
-    fn add_assign(&mut self, other: Self) {
+impl AddAssign<&CashFlow> for CashFlow {
+    fn add_assign(&mut self, other: &CashFlow) {
         if self.settlement_datetime == other.settlement_datetime {
             self.amount += other.amount;
         } else {
@@ -61,10 +60,10 @@ impl AddAssign for CashFlow {
     }
 }
 
-impl Sub for CashFlow {
-    type Output = Self;
+impl Sub<&CashFlow> for &CashFlow {
+    type Output = CashFlow;
 
-    fn sub(self, other: Self) -> Self::Output {
+    fn sub(self, other: &CashFlow) -> Self::Output {
         if self.settlement_datetime == other.settlement_datetime {
             CashFlow {
                 amount: self.amount - other.amount,
@@ -76,8 +75,8 @@ impl Sub for CashFlow {
     }
 }
 
-impl SubAssign for CashFlow {
-    fn sub_assign(&mut self, other: Self) {
+impl SubAssign<&CashFlow> for CashFlow {
+    fn sub_assign(&mut self, other: &CashFlow) {
         if self.settlement_datetime == other.settlement_datetime {
             self.amount -= other.amount;
         } else {
@@ -158,7 +157,7 @@ mod tests {
     fn test_cashflow_add() {
         let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
-        let result = cf1 + cf2;
+        let result = &cf1 + &cf2;
         assert_eq!(result.amount, 250.0);
     }
 
@@ -167,14 +166,14 @@ mod tests {
     fn test_cashflow_add_panic() {
         let cf1 = CashFlow::new(100.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
-        let _ = cf1 + cf2;
+        let _ = &cf1 + &cf2;
     }
 
     #[test]
     fn test_cashflow_add_assign() {
         let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
-        cf1 += cf2;
+        cf1 += &cf2;
         assert_eq!(cf1.amount, 350.0);
     }
 
@@ -183,14 +182,14 @@ mod tests {
     fn test_cashflow_add_assign_panic() {
         let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
-        cf1 += cf2;
+        cf1 += &cf2;
     }
 
     #[test]
     fn test_cashflow_sub() {
         let cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
-        let result = cf1 - cf2;
+        let result = &cf1 - &cf2;
         assert_eq!(result.amount, 50.0);
     }
 
@@ -199,14 +198,14 @@ mod tests {
     fn test_cashflow_sub_panic() {
         let cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
-        let _ = cf1 - cf2;
+        let _ = &cf1 - &cf2;
     }
 
     #[test]
     fn test_cashflow_sub_assign() {
         let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
-        cf1 -= cf2;
+        cf1 -= &cf2;
         assert_eq!(cf1.amount, 50.0);
     }
 
@@ -215,7 +214,7 @@ mod tests {
     fn test_cashflow_sub_assign_panic() {
         let mut cf1 = CashFlow::new(200.0, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap());
         let cf2 = CashFlow::new(150.0, Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap());
-        cf1 -= cf2;
+        cf1 -= &cf2;
     }
 
     #[test]
