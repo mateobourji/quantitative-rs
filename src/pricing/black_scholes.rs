@@ -3,6 +3,7 @@ extern crate statrs;
 
 use chrono::offset::Utc;
 use statrs::distribution::{Continuous, ContinuousCDF, Normal};
+use crate::cashflows::CashFlow;
 
 use crate::instruments::OptionType;
 use crate::instruments::vanilla_option::VanillaOption;
@@ -26,14 +27,16 @@ fn d1_d2(strike: f64, s0: f64, r: f64, sigma: f64, time_to_maturity: f64) -> (f6
 
 macro_rules! create_black_scholes_functions {
     ($option_type:ty) => {
-        pub fn black_scholes_price(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> f64 {
+        pub fn black_scholes_price(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> CashFlow {
             let time_to_maturity = instrument.exercise_datetime.signed_duration_since(Utc::now()).num_days() as f64 / 365.25;
             let (d1, d2) = d1_d2(instrument.strike, s0, r, sigma, time_to_maturity);
 
-            match instrument.option_type {
+            let option_price = match instrument.option_type {
                 OptionType::Call => s0 * normal_cdf(d1) - instrument.strike * (-r * time_to_maturity).exp() * normal_cdf(d2),
                 OptionType::Put => instrument.strike * (-r * time_to_maturity).exp() * normal_cdf(-d2) - s0 * normal_cdf(-d1),
-            }
+            };
+            
+            CashFlow::new(option_price, instrument.underlying_currency, Utc::now())
         }
 
         pub fn delta(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> f64 {
@@ -102,8 +105,9 @@ mod tests {
         let option = create_option(option_type, strike, 365);
 
         let price = black_scholes_price(&option, s0, r, sigma);
-
-        assert!((price - expected_price).abs() <= 0.1, "Price {} not within expected range {}", price, expected_price);
+        assert_eq!(price.currency, option.underlying_currency, "Option underlying currency and price currency do not match");
+        assert!((price.settlement_datetime - Utc::now()) <= Duration::seconds(1) , "Price settlement date not now");
+        assert!((price.amount - expected_price).abs() <= 0.1, "Price {} not within expected range {}", price, expected_price);
     }
 
     #[test]
