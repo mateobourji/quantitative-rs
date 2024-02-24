@@ -6,7 +6,7 @@ fn monte_carlo_price<T: Value, U: Simulate>(instrument: &T, price_process: &U, a
     let mut total_payoff = CashFlow::new(0.0, instrument.settlement_datetime());
     for _ in 0..number_of_paths {
         let price_path = price_process.generate_price_path(number_of_steps);
-        total_payoff += instrument.calculate_payoff(price_path);
+        total_payoff += &instrument.calculate_payoff(price_path);
     }
 
     let average_payoff = total_payoff / number_of_paths as f64;
@@ -35,8 +35,8 @@ mod tests {
         };
 
         let bs_process = BlackScholesProcess::new(100.0, 0.05, 0.2, 1.0); // s0, r, sigma, t
-        let price = monte_carlo_price(&option, &bs_process, 0.05, 1000, 365); // number_of_paths, number_of_steps
-
+        let price = monte_carlo_price(&option, &bs_process, 0.05, 100000, 365); // number_of_paths, number_of_steps
+        println!("price is {price}");
         assert!(price > 0.0, "The calculated option price should be positive.");
     }
 }
