@@ -2,7 +2,7 @@ use crate::cashflows::cashflow::CashFlow;
 use crate::instruments::Value;
 use crate::processes::Simulate;
 
-fn monte_carlo_price<T: Value, U: Simulate>(instrument: &T, price_process: &U, annual_discount_rate: f64, number_of_paths: usize, number_of_steps: usize) -> f64 {
+pub fn monte_carlo_price<T: Value, U: Simulate>(instrument: &T, price_process: &U, annual_discount_rate: f64, number_of_paths: usize, number_of_steps: usize) -> f64 {
     let mut total_payoff = CashFlow::new(0.0, instrument.settlement_datetime());
     for _ in 0..number_of_paths {
         let price_path = price_process.generate_price_path(number_of_steps);
