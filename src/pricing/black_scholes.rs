@@ -17,20 +17,18 @@ fn normal_pdf(x: f64) -> f64 {
     normal.pdf(x)
 }
 
-fn d1(strike: f64, s0: f64, r: f64, sigma: f64, time_to_maturity: f64) -> f64 {
-    (s0 / strike).ln() + (r + sigma.powi(2) / 2.0) * time_to_maturity / (sigma * time_to_maturity.sqrt())
-}
+fn d1_d2(strike: f64, s0: f64, r: f64, sigma: f64, time_to_maturity: f64) -> (f64, f64){
+    let d1 = ((s0 / strike).ln() + (r + sigma.powi(2) / 2.0) * time_to_maturity) / (sigma * time_to_maturity.sqrt());
+    let d2 = d1 - sigma * time_to_maturity.sqrt();
 
-fn d2(d1: f64, sigma: f64, time_to_maturity: f64) -> f64 {
-    d1 - sigma * time_to_maturity.sqrt()
+    (d1, d2)
 }
 
 macro_rules! create_black_scholes_functions {
     ($option_type:ty) => {
         pub fn black_scholes_price(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> f64 {
             let time_to_maturity = instrument.exercise_datetime.signed_duration_since(Utc::now()).num_days() as f64 / 365.25;
-            let d1 = d1(instrument.strike, s0, r, sigma, time_to_maturity);
-            let d2 = d2(d1, sigma, time_to_maturity);
+            let (d1, d2) = d1_d2(instrument.strike, s0, r, sigma, time_to_maturity);
 
             match instrument.option_type {
                 OptionType::Call => s0 * normal_cdf(d1) - instrument.strike * (-r * time_to_maturity).exp() * normal_cdf(d2),
@@ -40,7 +38,7 @@ macro_rules! create_black_scholes_functions {
 
         pub fn delta(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> f64 {
             let time_to_maturity = instrument.exercise_datetime.signed_duration_since(Utc::now()).num_days() as f64 / 365.25;
-            let d1 = d1(instrument.strike, s0, r, sigma, time_to_maturity);
+            let (d1, _) = d1_d2(instrument.strike, s0, r, sigma, time_to_maturity);
 
             match instrument.option_type {
                 OptionType::Call => normal_cdf(d1),
@@ -50,20 +48,19 @@ macro_rules! create_black_scholes_functions {
 
         pub fn gamma(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> f64 {
             let time_to_maturity = instrument.exercise_datetime.signed_duration_since(Utc::now()).num_days() as f64 / 365.25;
-            let d1 = d1(instrument.strike, s0, r, sigma, time_to_maturity);
+            let (d1, _) = d1_d2(instrument.strike, s0, r, sigma, time_to_maturity);
             normal_pdf(d1) / (s0 * sigma * time_to_maturity.sqrt())
         }
 
         pub fn vega(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> f64 {
             let time_to_maturity = instrument.exercise_datetime.signed_duration_since(Utc::now()).num_days() as f64 / 365.25;
-            let d1 = d1(instrument.strike, s0, r, sigma, time_to_maturity);
+            let (d1, _) = d1_d2(instrument.strike, s0, r, sigma, time_to_maturity);
             s0 * normal_pdf(d1) * time_to_maturity.sqrt()
         }
 
         pub fn theta(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> f64 {
             let time_to_maturity = instrument.exercise_datetime.signed_duration_since(Utc::now()).num_days() as f64 / 365.25;
-            let d1 = d1(instrument.strike, s0, r, sigma, time_to_maturity);
-            let d2 = d2(d1, sigma, time_to_maturity);
+            let (d1, d2) = d1_d2(instrument.strike, s0, r, sigma, time_to_maturity);
 
             match instrument.option_type {
                 OptionType::Call => -s0 * normal_pdf(d1) * sigma / (2.0 * time_to_maturity.sqrt()) - r * instrument.strike * (-r * time_to_maturity).exp() * normal_cdf(d2),
@@ -73,8 +70,7 @@ macro_rules! create_black_scholes_functions {
 
         pub fn rho(instrument: &$option_type, s0: f64, r: f64, sigma: f64) -> f64 {
             let time_to_maturity = instrument.exercise_datetime.signed_duration_since(Utc::now()).num_days() as f64 / 365.25;
-            let d1 = d1(instrument.strike, s0, r, sigma, time_to_maturity);
-            let d2 = d2(d1, sigma, time_to_maturity);
+            let (_, d2) = d1_d2(instrument.strike, s0, r, sigma, time_to_maturity);
 
             match instrument.option_type {
                 OptionType::Call => instrument.strike * time_to_maturity * (-r * time_to_maturity).exp() * normal_cdf(d2),
