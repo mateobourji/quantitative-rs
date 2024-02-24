@@ -327,7 +327,7 @@ mod tests {
     }
 
     #[test]
-    fn test_idempotent_conversion_test() {
+    fn test_idempotent_conversion() {
         let initial_cash_flow = CashFlow::new(100.0, Currency::USD, Utc::now());
         let conversion_rate_to_eur = 0.8;
         let conversion_rate_back_to_usd = 1.25; 
@@ -341,7 +341,7 @@ mod tests {
     }
 
     #[test]
-    fn test_convert_zero_cashflow_test() {
+    fn test_convert_zero_cashflow() {
         let initial_cash_flow = CashFlow::new(0.0, Currency::USD, Utc::now());
         let conversion_rate = 0.8;
         let converted_cash_flow = initial_cash_flow.convert_to(Currency::EUR, conversion_rate);
