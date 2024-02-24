@@ -18,13 +18,17 @@ impl CashFlow {
         CashFlow { amount, currency, settlement_datetime }
     }
 
+    pub fn convert_to(&self, other_currency: Currency, conversion_rate: f64) -> CashFlow {
+        CashFlow::new(self.amount * conversion_rate, other_currency, self.settlement_datetime)
+    }
+    
     pub fn value_at_date(&self, valuation_datetime: DateTime<Utc>, annual_discount_rate: f64) -> CashFlow {
         let duration = self.settlement_datetime - valuation_datetime;
         let years_to_settlement = duration.num_seconds() as f64 / (365.25 * 24.0 * 3600.0);
 
         CashFlow::new(self.amount / (1.0 + annual_discount_rate).powf(years_to_settlement), self.currency, valuation_datetime)
     }
-
+    
     fn validate_operation_with(&self, other: &CashFlow) -> bool {
         if self.settlement_datetime != other.settlement_datetime {
             panic!("Cannot operate on cashflows with different settlement dates.");
@@ -300,6 +304,53 @@ mod tests {
         cf /= 0.0; // This should panic
     }
 
+    #[test]
+    fn test_conversion() {
+        let initial_cash_flow = CashFlow::new(100.0, Currency::USD, Utc::now());
+        let conversion_rate = 0.8;
+        let converted_cash_flow = initial_cash_flow.convert_to(Currency::EUR, conversion_rate);
+
+        assert_eq!(converted_cash_flow.amount, 80.0); 
+        assert_eq!(converted_cash_flow.currency, Currency::EUR);
+        assert_eq!(converted_cash_flow.settlement_datetime, initial_cash_flow.settlement_datetime);
+    }
+
+    #[test]
+    fn test_identity_conversion() {
+        let initial_cash_flow = CashFlow::new(100.0, Currency::USD, Utc::now());
+        let conversion_rate = 1.0;
+        let converted_cash_flow = initial_cash_flow.convert_to(Currency::USD, conversion_rate);
+
+        assert_eq!(converted_cash_flow.amount, 100.0); 
+        assert_eq!(converted_cash_flow.currency, Currency::USD);
+        assert_eq!(converted_cash_flow.settlement_datetime, initial_cash_flow.settlement_datetime);
+    }
+
+    #[test]
+    fn test_idempotent_conversion_test() {
+        let initial_cash_flow = CashFlow::new(100.0, Currency::USD, Utc::now());
+        let conversion_rate_to_eur = 0.8;
+        let conversion_rate_back_to_usd = 1.25; 
+
+        let converted_to_eur = initial_cash_flow.convert_to(Currency::EUR, conversion_rate_to_eur);
+        let converted_back_to_usd = converted_to_eur.convert_to(Currency::USD, conversion_rate_back_to_usd);
+
+        assert!((converted_back_to_usd.amount - 100.0).abs() < f64::EPSILON);
+        assert_eq!(converted_back_to_usd.currency, initial_cash_flow.currency);
+        assert_eq!(converted_back_to_usd.settlement_datetime, initial_cash_flow.settlement_datetime);
+    }
+
+    #[test]
+    fn test_convert_zero_cashflow_test() {
+        let initial_cash_flow = CashFlow::new(0.0, Currency::USD, Utc::now());
+        let conversion_rate = 0.8;
+        let converted_cash_flow = initial_cash_flow.convert_to(Currency::EUR, conversion_rate);
+        
+        assert_eq!(converted_cash_flow.amount, 0.0);
+        assert_eq!(converted_cash_flow.currency, Currency::EUR);
+        assert_eq!(converted_cash_flow.settlement_datetime, initial_cash_flow.settlement_datetime);
+    }
+    
     #[test]
     fn test_present_value_one_year() {
         let amount = 100.0;
