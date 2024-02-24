@@ -84,6 +84,7 @@ create_black_scholes_functions!(VanillaOption);
 
 mod tests {
     use chrono::Duration;
+    use crate::cashflows::currency::Currency;
 
     use super::*;
 
@@ -93,6 +94,7 @@ mod tests {
             exercise_datetime: Utc::now() + Duration::days(days_to_maturity),
             settlement_datetime: Utc::now() + Duration::days(days_to_maturity + 2),
             option_type,
+            underlying_currency: Currency::USD,
         }
     }
 
