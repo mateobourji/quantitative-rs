@@ -1,6 +1,7 @@
 extern crate chrono;
 
 use std::fmt;
+use std::iter::Sum;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 use chrono::{DateTime, Utc};
@@ -21,14 +22,14 @@ impl CashFlow {
     pub fn convert_to(&self, other_currency: Currency, conversion_rate: f64) -> CashFlow {
         CashFlow::new(self.amount * conversion_rate, other_currency, self.settlement_datetime)
     }
-    
+
     pub fn value_at_date(&self, valuation_datetime: DateTime<Utc>, annual_discount_rate: f64) -> CashFlow {
         let duration = self.settlement_datetime - valuation_datetime;
         let years_to_settlement = duration.num_seconds() as f64 / (365.25 * 24.0 * 3600.0);
 
         CashFlow::new(self.amount / (1.0 + annual_discount_rate).powf(years_to_settlement), self.currency, valuation_datetime)
     }
-    
+
     fn validate_operation_with(&self, other: &CashFlow) -> bool {
         if self.settlement_datetime != other.settlement_datetime {
             panic!("Cannot operate on cashflows with different settlement dates.");
@@ -135,6 +136,14 @@ impl DivAssign<f64> for CashFlow {
         } else {
             self.amount /= divisor;
         }
+    }
+}
+
+impl Sum for CashFlow {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self
+    {
+        iter.reduce(|acc, x| &acc + &x)
+            .unwrap_or_else(|| CashFlow::new(0.0, Currency::USD, Utc::now())) // default cashflow
     }
 }
 
@@ -305,12 +314,23 @@ mod tests {
     }
 
     #[test]
+    fn test_cashflow_sum() {
+        let cashflows = vec![
+            CashFlow::new(100.0, Currency::USD, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap()),
+            CashFlow::new(150.0, Currency::USD, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap()),
+            CashFlow::new(250.0, Currency::USD, Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap()),
+        ];
+        let total: CashFlow = cashflows.into_iter().sum();
+        assert_eq!(total.amount, 500.0);
+    }
+
+    #[test]
     fn test_conversion() {
         let initial_cash_flow = CashFlow::new(100.0, Currency::USD, Utc::now());
         let conversion_rate = 0.8;
         let converted_cash_flow = initial_cash_flow.convert_to(Currency::EUR, conversion_rate);
 
-        assert_eq!(converted_cash_flow.amount, 80.0); 
+        assert_eq!(converted_cash_flow.amount, 80.0);
         assert_eq!(converted_cash_flow.currency, Currency::EUR);
         assert_eq!(converted_cash_flow.settlement_datetime, initial_cash_flow.settlement_datetime);
     }
@@ -321,7 +341,7 @@ mod tests {
         let conversion_rate = 1.0;
         let converted_cash_flow = initial_cash_flow.convert_to(Currency::USD, conversion_rate);
 
-        assert_eq!(converted_cash_flow.amount, 100.0); 
+        assert_eq!(converted_cash_flow.amount, 100.0);
         assert_eq!(converted_cash_flow.currency, Currency::USD);
         assert_eq!(converted_cash_flow.settlement_datetime, initial_cash_flow.settlement_datetime);
     }
@@ -330,7 +350,7 @@ mod tests {
     fn test_idempotent_conversion() {
         let initial_cash_flow = CashFlow::new(100.0, Currency::USD, Utc::now());
         let conversion_rate_to_eur = 0.8;
-        let conversion_rate_back_to_usd = 1.25; 
+        let conversion_rate_back_to_usd = 1.25;
 
         let converted_to_eur = initial_cash_flow.convert_to(Currency::EUR, conversion_rate_to_eur);
         let converted_back_to_usd = converted_to_eur.convert_to(Currency::USD, conversion_rate_back_to_usd);
@@ -345,12 +365,12 @@ mod tests {
         let initial_cash_flow = CashFlow::new(0.0, Currency::USD, Utc::now());
         let conversion_rate = 0.8;
         let converted_cash_flow = initial_cash_flow.convert_to(Currency::EUR, conversion_rate);
-        
+
         assert_eq!(converted_cash_flow.amount, 0.0);
         assert_eq!(converted_cash_flow.currency, Currency::EUR);
         assert_eq!(converted_cash_flow.settlement_datetime, initial_cash_flow.settlement_datetime);
     }
-    
+
     #[test]
     fn test_present_value_one_year() {
         let amount = 100.0;
