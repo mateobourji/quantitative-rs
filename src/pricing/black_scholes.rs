@@ -35,7 +35,7 @@ macro_rules! create_black_scholes_functions {
                 OptionType::Call => s0 * normal_cdf(d1) - instrument.strike * (-r * time_to_maturity).exp() * normal_cdf(d2),
                 OptionType::Put => instrument.strike * (-r * time_to_maturity).exp() * normal_cdf(-d2) - s0 * normal_cdf(-d1),
             };
-            
+
             CashFlow::new(option_price, instrument.underlying_currency, Utc::now())
         }
 
@@ -91,18 +91,18 @@ mod tests {
 
     use super::*;
 
-    fn create_option(option_type: OptionType, strike: f64, days_to_maturity: i64) -> VanillaOption {
+    fn create_option(option_type: OptionType, strike: f64, days_to_maturity: i64, underlying_currency: Currency) -> VanillaOption {
         VanillaOption {
             strike,
             exercise_datetime: Utc::now() + Duration::days(days_to_maturity),
             settlement_datetime: Utc::now() + Duration::days(days_to_maturity + 2),
             option_type,
-            underlying_currency: Currency::USD,
+            underlying_currency,
         }
     }
 
     fn test_black_scholes(option_type: OptionType, strike: f64, s0: f64, r: f64, sigma: f64, expected_price: f64) {
-        let option = create_option(option_type, strike, 365);
+        let option = create_option(option_type, strike, 365, Currency::USD);
 
         let price = black_scholes_price(&option, s0, r, sigma);
         assert_eq!(price.currency, option.underlying_currency, "Option underlying currency and price currency do not match");
@@ -122,10 +122,10 @@ mod tests {
         test_black_scholes(OptionType::Put, 120.0, 100.0, r, sigma, 17.39);
         test_black_scholes(OptionType::Put, 80.0, 100.0, r, sigma, 0.69);
     }
-
+    
     #[test]
     fn test_delta() {
-        let option = create_option(OptionType::Call, 100.0, 365);
+        let option = create_option(OptionType::Call, 100.0, 365, Currency::USD);
         let delta = delta(&option, 100.0, 0.05, 0.2);
         // Compare delta with a known value or range
         assert!((delta - 0.63683).abs() < 0.1);
@@ -133,7 +133,7 @@ mod tests {
 
     #[test]
     fn test_gamma() {
-        let option = create_option(OptionType::Call, 100.0, 365);
+        let option = create_option(OptionType::Call, 100.0, 365, Currency::USD);
         let gamma = gamma(&option, 100.0, 0.05, 0.2);
         // Compare gamma with a known value or range
         assert!((gamma - 0.01876).abs() < 0.1);
@@ -141,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_vega() {
-        let option = create_option(OptionType::Call, 100.0, 365);
+        let option = create_option(OptionType::Call, 100.0, 365, Currency::USD);
         let vega = vega(&option, 100.0, 0.05, 0.2);
 
         assert!((vega - 37.52403).abs() < 0.1);
@@ -149,7 +149,7 @@ mod tests {
 
     #[test]
     fn test_theta() {
-        let option = create_option(OptionType::Call, 100.0, 365);
+        let option = create_option(OptionType::Call, 100.0, 365, Currency::USD);
         let theta = theta(&option, 100.0, 0.05, 0.2);
 
         assert!((theta - -6.41403).abs() < 0.1);
@@ -157,7 +157,7 @@ mod tests {
 
     #[test]
     fn test_rho() {
-        let option = create_option(OptionType::Call, 100.0, 365);
+        let option = create_option(OptionType::Call, 100.0, 365, Currency::USD);
         let rho = rho(&option, 100.0, 0.05, 0.2);
 
         assert!((rho - 53.04977330181251).abs() < 0.1);
