@@ -1,19 +1,17 @@
+use chrono::Utc;
 use crate::cashflows::CashFlow;
 use crate::instruments::Value;
 use crate::processes::Simulate;
 
-pub fn monte_carlo_price<T: Value, U: Simulate>(instrument: &T, price_process: &U, annual_discount_rate: f64, number_of_paths: usize, number_of_steps: usize) -> f64 {
-    let mut total_payoff = CashFlow::new(0.0, instrument.underlying_currency(), instrument.settlement_datetime());
-    for _ in 0..number_of_paths {
-        let price_path = price_process.generate_price_path(number_of_steps);
-        total_payoff += &instrument.calculate_payoff(price_path);
-    }
-
-    let average_payoff = total_payoff / number_of_paths as f64;
-    let discount_average_payoff = average_payoff.value_at_date(instrument.settlement_datetime(),  annual_discount_rate);
-
-    discount_average_payoff.amount
+pub fn monte_carlo_price<T: Value, U: Simulate>(instrument: &T, price_process: &U, annual_discount_rate: f64, number_of_paths: usize, number_of_steps: usize) -> CashFlow
+{
+    ((0..number_of_paths)
+        .map(|_| price_process.generate_price_path(number_of_steps))
+        .map(|price_path| instrument.calculate_payoff(&price_path))
+        .sum::<CashFlow>() / (number_of_paths as f64))
+        .value_at_date(Utc::now(), annual_discount_rate)
 }
+
 
 #[cfg(test)]
 mod tests {
@@ -39,8 +37,7 @@ mod tests {
 
         let bs_process = BlackScholesProcess::new(100.0, 0.05, 0.2, 1.0); // s0, r, sigma, t
         let price = monte_carlo_price(&option, &bs_process, 0.05, 1000, 365);
-
-        assert!(price > 0.0, "The calculated option price should be positive.");
+        assert!(price.amount > 0.0, "The calculated option price should be positive.");
     }
 
     #[test]
@@ -56,6 +53,6 @@ mod tests {
         let bs_process = HestonProcess::new(100.0, 0.05, 0.05, 0.8, 0.1, 0.2, 0.2, 1.0);
         let price = monte_carlo_price(&option, &bs_process, 0.05, 1000, 365);
         
-        assert!(price > 0.0, "The calculated option price should be positive.");
+        assert!(price.amount > 0.0, "The calculated option price should be positive.");
     }
 }

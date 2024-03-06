@@ -28,7 +28,7 @@ impl VanillaOption {
 
 impl Value for VanillaOption
 {
-    fn calculate_payoff(&self, price_path: Vec<f64>) -> CashFlow {
+    fn calculate_payoff(&self, price_path: &Vec<f64>) -> CashFlow {
         match self.option_type {
             OptionType::Call => CashFlow::new((price_path.last().unwrap() - self.strike).max(0.0), self.underlying_currency, self.settlement_datetime),
             OptionType::Put => CashFlow::new((self.strike - price_path.last().unwrap()).max(0.0), self.underlying_currency, self.settlement_datetime)
