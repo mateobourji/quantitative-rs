@@ -4,7 +4,7 @@ use crate::cashflows::cashflow::CashFlow;
 use crate::cashflows::currency::Currency;
 
 pub mod vanilla_option;
-mod barrier_option;
+pub mod barrier_option;
 
 pub enum OptionType {
     Call,
